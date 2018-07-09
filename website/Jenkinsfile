@@ -1,5 +1,7 @@
 #!/usr/bin/groovy
 
+String SlackChannel = 'city_pipeline'
+
 node (''){
     env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
@@ -11,7 +13,7 @@ node('') {
       checkout scm
     }
 
-    slackSend channel: 'city_pipeline', color: "#439FE0", message: "@here - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
+    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
 
     stage('Build Image') {
       sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
