@@ -1,8 +1,11 @@
 #!/usr/bin/groovy
 
-String ApiServer = "${env.OPENSHIFT_API_URL}"
-String ApiToken = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
 String SlackChannel = 'city_pipeline'
+
+node (''){
+    env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
+    env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
+}
 
 node('') {
     stage('SCM Checkout')
