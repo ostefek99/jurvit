@@ -1,9 +1,8 @@
 #!/usr/bin/groovy
 
-node (''){
-    env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
-    env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
-}
+String ApiServer = "${env.OPENSHIFT_API_URL}"
+String ApiToken = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
+String SlackChannel = 'city_pipeline'
 
 node('') {
     stage('SCM Checkout')
@@ -11,7 +10,7 @@ node('') {
       checkout scm
     }
 
-    slackSend channel: 'city_pipeline', color: "#439FE0", message: "@here - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
+    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
 
     stage('Build Image') {
       sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
@@ -24,14 +23,14 @@ node('') {
     }
 
     stage ('Deploy to Dev') {
-      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
 
-      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
+      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
     }
 
     stage ('Deploy to Test') {
-      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
+      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
     }
 
     stage ('Automated Tests')
@@ -42,7 +41,7 @@ node('') {
     }
 
     stage ('Deploy to Production') {
-      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
+      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
     }
 }
