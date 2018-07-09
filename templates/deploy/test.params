@@ -1,0 +1,3 @@
+NAMESPACE=demo-test
+NAMESPACE_BUILD=demo-pipeline
+APPLICATION_NAME=demo

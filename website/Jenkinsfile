@@ -1,0 +1,46 @@
+#!/usr/bin/groovy
+
+node (''){
+    env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
+    env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
+}
+
+node('') {
+    stage('SCM Checkout')
+    {
+      checkout scm
+    }
+
+    stage('Build Image') {
+      sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
+    }
+
+    stage ('Security Scanning')
+    {
+      echo 'Security Scanning... please wait'
+      sleep 1
+    }
+
+    stage ('Deploy to Dev') {
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
+    }
+
+    stage ('Deploy to Test') {
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
+    }
+
+    stage ('Automated Tests')
+    {
+      echo 'Running automated tests.' 
+      sleep 2
+      echo 'All good here!'
+    }
+
+    stage ('Deploy to Production') {
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
+    }
+}

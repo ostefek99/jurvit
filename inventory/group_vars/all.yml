@@ -1,0 +1,45 @@
+---
+
+openshift_cluster_content:
+- object: projectrequest
+  content:
+  - name: "demo-pipeline"
+    template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
+    params: "{{ inventory_dir }}/../templates/projectrequest/pipeline.params"
+    template_action: create
+  - name: "demo-dev"
+    template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
+    params: "{{ inventory_dir }}/../templates/projectrequest/dev.params"
+    template_action: create
+  - name: "demo-test"
+    template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
+    params: "{{ inventory_dir }}/../templates/projectrequest/test.params"
+    template_action: create
+  - name: "demo-prod"
+    template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
+    params: "{{ inventory_dir }}/../templates/projectrequest/prod.params"
+    template_action: create
+- object: builds
+  content:
+  - name: "demo-pipeline"
+    template: "{{ inventory_dir }}/../templates/build/template-pipeline.yml"
+    params: "{{ inventory_dir }}/../templates/build/pipeline.params"
+    namespace: "demo-pipeline"
+  - name: "demo-build"
+    template: "{{ inventory_dir }}/../templates/build/template-build.yml"
+    params: "{{ inventory_dir }}/../templates/build/build.params"
+    namespace: "demo-pipeline"
+- object: deployments
+  content:
+  - name: "demo-dev"
+    template: "{{ inventory_dir }}/../templates/deploy/template.yml"
+    params: "{{ inventory_dir }}/../templates/deploy/dev.params"
+    namespace: "demo-dev"
+  - name: "demo-test"
+    template: "{{ inventory_dir }}/../templates/deploy/template.yml"
+    params: "{{ inventory_dir }}/../templates/deploy/test.params"
+    namespace: "demo-test"
+  - name: "demo-prod"
+    template: "{{ inventory_dir }}/../templates/deploy/template.yml"
+    params: "{{ inventory_dir }}/../templates/deploy/prod.params"
+    namespace: "demo-prod"

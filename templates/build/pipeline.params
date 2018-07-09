@@ -1,0 +1,8 @@
+NAMESPACE=demo-pipeline
+NAMESPACE_DEV=demo-dev
+NAMESPACE_TEST=demo-test
+NAMESPACE_PROD=demo-prod
+APPLICATION_NAME=demo
+SCM_URL=https://github.com/oybed/jurvit.git
+SCM_REF=master
+SCM_CONTEXT_DIR=website

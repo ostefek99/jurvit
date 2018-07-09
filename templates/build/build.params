@@ -1,0 +1,8 @@
+NAMESPACE=demo-pipeline
+HTTPD_BUILDER_NAME=httpd
+HTTPD_BUILDER_IMAGE_TAG='2.4'
+HTTPD_BUILDER_NAMESPACE=openshift
+APPLICATION_NAME=demo
+SCM_URL=https://github.com/oybed/jurvit.git
+SCM_REF=master
+SCM_CONTEXT_DIR=website

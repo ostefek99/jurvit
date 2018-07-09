@@ -1,0 +1,97 @@
+---
+kind: Template
+apiVersion: v1
+metadata:
+  annotations:
+    description: Demo Pipeline builder
+  name: demo-pipeline
+labels:
+  template: demo-pipeline
+parameters:
+- name: NAMESPACE
+  description: The OpenShift Namespace Where this pipeline is deployed
+  displayName: Demo Pipeline Namespace
+  value: demo-pipeline
+  required: true
+- name: NAMESPACE_DEV
+  description: The Dev Namespace
+  displayName: Demo Dev Namespace
+  value: demo-dev
+  required: true
+- name: NAMESPACE_TEST
+  description: The Test Namespace
+  displayName: Demo Test Namespace
+  value: demo-test
+  required: true
+- name: NAMESPACE_PROD
+  description: The Production Namespace
+  displayName: Demo Production Namespace
+  value: demo-prod
+  required: true
+- name: APPLICATION_NAME
+  description: The name for the HTTPD application.
+  displayName: Apache application name
+  value: demo
+  required: true
+- name: SCM_URL
+  description: Git source URI for HTTPD application
+  displayName: HTTPD application source url
+  value: https://github.com/obedin/jurvit.git
+  required: true
+- name: SCM_REF
+  description: HTTPD application source branch/tag reference.
+  displayName: HTTPD application source branch/tag reference.
+  value: master
+  required: false
+- name: SCM_CONTEXT_DIR
+  description: Path within Git project to build containing the HTTPD application;
+    empty for root project directory.
+  displayName: HTTPD application context directory.
+  value: website
+  required: true
+- name: GITHUB_WEBHOOK_SECRET
+  displayName: GitHub Webhook Secret
+  description: A secret string used to configure the GitHub webhook.
+  generate: expression
+  from: "[a-zA-Z0-9]{40}"
+objects:
+- kind: BuildConfig
+  apiVersion: v1
+  metadata:
+    labels:
+      build: "${APPLICATION_NAME}"
+      name: "${APPLICATION_NAME}-pipeline"
+    name: "${APPLICATION_NAME}-pipeline"
+    namespace: "${NAMESPACE}"
+  spec:
+    nodeSelector: {}
+    output: {}
+    postCommit: {}
+    resources: {}
+    runPolicy: Serial
+    source:
+      contextDir: "${SCM_CONTEXT_DIR}"
+      git:
+        ref: "${SCM_REF}"
+        uri: "${SCM_URL}"
+      type: Git
+    strategy:
+      jenkinsPipelineStrategy:
+        env:
+        - name: "APP_NAME"
+          value: "${APPLICATION_NAME}"
+        - name: "NAMESPACE_BUILD"
+          value: "${NAMESPACE}"
+        - name: "NAMESPACE_DEV"
+          value: "${NAMESPACE_DEV}"
+        - name: "NAMESPACE_TEST"
+          value: "${NAMESPACE_TEST}"
+        - name: "NAMESPACE_PROD"
+          value: "${NAMESPACE_PROD}"
+        jenkinsfilePath: Jenkinsfile
+      type: JenkinsPipeline
+    triggers:
+    - github:
+        secret: "${PIPELINE_GITHUB_WEBHOOK_SECRET}"
+      type: GitHub
+    - type: ConfigChange
