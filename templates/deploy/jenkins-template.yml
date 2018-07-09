@@ -34,16 +34,6 @@ objects:
       kind: Service
       name: ${JENKINS_SERVICE_NAME}
 - apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: ${JENKINS_SERVICE_NAME}
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: ${VOLUME_CAPACITY}
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${JENKINS_SERVICE_NAME}
