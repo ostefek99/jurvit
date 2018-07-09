@@ -1,10 +1,12 @@
 #!/usr/bin/groovy
 
 String SlackChannel = 'city_pipeline'
+String JenkinsServer = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 
 node (''){
     env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
+    env.JENKINS_SERVER = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 }
 
 node('') {
@@ -16,7 +18,7 @@ node('') {
     slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
 
     stage('Build Image') {
-      sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
+      sh "oc start-build ${env.APP_NAME} --from-dir=. -w"
     }
 
     stage ('Security Scanning')
@@ -26,14 +28,14 @@ node('') {
     }
 
     stage ('Deploy to Dev') {
-      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_DEV}", namespace: "${env.NAMESPACE_BUILD}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
 
-      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_DEV}", verifyReplicaCount: true)
     }
 
     stage ('Deploy to Test') {
-      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_TEST}", namespace: "${env.NAMESPACE_DEV}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_TEST}", verifyReplicaCount: true)
     }
 
     stage ('Automated Tests')
@@ -43,8 +45,11 @@ node('') {
       echo 'All good here!'
     }
 
+    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build Need your attention: ${env.JENKINS_SERVER}"
+
     stage ('Deploy to Production') {
-      openshiftTag (apiURL: ApiServer, authToken: ApiToken, destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: ApiToken, destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
-      openshiftVerifyDeployment (apiURL: ApiServer, authToken: ApiToken, depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
+      input "Josh - promote to Production?"
+      openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
+      openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
     }
 }
