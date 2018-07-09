@@ -6,7 +6,7 @@ String JenkinsServer = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/c
 node (''){
     env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
-    env.JENKINS_SERVER = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
+    env.JENKINS_SERVER = "https://jenkins-demo-pipeline-cospg.apps.d1.core.rht-labs.com/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 }
 
 node('') {
