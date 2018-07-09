@@ -1,6 +1,7 @@
 ---
 
 openshift_cluster_content:
+- galaxy_requirements: "{{ inventory_dir }}/../files/galaxy_requirements.yml"
 - object: projectrequest
   content:
   - name: "demo-pipeline"
@@ -25,6 +26,17 @@ openshift_cluster_content:
     template: "https://raw.githubusercontent.com/rht-labs/labs-ci-cd/v3.7.4/openshift-templates/jenkins-s2i-build/template.yaml"
     params: "{{ inventory_dir }}/../templates/build/jenkins.params"
     namespace: "demo-pipeline"
+- object: ci-cd-deployments
+  content:
+  - name: "custom-jenkins"
+    template: "{{ inventory_dir }}/../templates/deploy/jenkins-template.yml"
+    params: "{{ inventory_dir }}/../templates/deploy/jenkins.params"
+    namespace: "demo-pipeline"
+    post_steps:
+    - role: openshift-applier/roles/openshift-replicas-ready
+      vars:
+        type: 'dc'
+        resource: 'jenkins'
 - object: builds
   content:
   - name: "demo-pipeline"
@@ -37,10 +49,6 @@ openshift_cluster_content:
     namespace: "demo-pipeline"
 - object: deployments
   content:
-  - name: "custom-jenkins"
-    template: "{{ inventory_dir }}/../templates/deploy/jenkins-template.yml"
-    params: "{{ inventory_dir }}/../templates/deploy/jenkins.params"
-    namespace: "demo-pipeline"
   - name: "demo-dev"
     template: "{{ inventory_dir }}/../templates/deploy/template.yml"
     params: "{{ inventory_dir }}/../templates/deploy/dev.params"
