@@ -11,7 +11,7 @@ node('') {
       checkout scm
     }
 
-    slackSend channel: 'city_pipeline', color: "#439FE0", message: "Build started: ${jobInfoShort}"
+    slackSend channel: 'city_pipeline', color: "#439FE0", message: "Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
 
     stage('Build Image') {
       sh "oc start-build ${env.APP_NAME} --from-dir=. --follow"
