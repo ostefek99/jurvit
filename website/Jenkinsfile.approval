@@ -1,6 +1,6 @@
 #!/usr/bin/groovy
 
-String SlackChannel = 'city_pipeline'
+String SlackChannel = 'sdiego'
 String JenkinsServer = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 
 node (''){
@@ -45,10 +45,10 @@ node('') {
       echo 'All good here!'
     }
 
-    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build Need your attention: ${env.JENKINS_SERVER}"
+    slackSend channel: SlackChannel, color: "#439FE0", message: "@jranoa - JOSH!! - the build needs your attention: ${env.JENKINS_SERVER}"
 
     stage ('Deploy to Production') {
-      input "Josh - promote to Production?"
+      input "Josh - Promote to Production?"
       openshiftTag (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", destStream: "${env.APP_NAME}", destTag: 'latest', destinationAuthToken: "${env.OCP_TOKEN}", destinationNamespace: "${env.NAMESPACE_PROD}", namespace: "${env.NAMESPACE_TEST}", srcStream: "${env.APP_NAME}", srcTag: 'latest')
       openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
     }
