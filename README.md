@@ -1,3 +1,3 @@
 # jurvit
 
-A testing repo for the demo stuff
+A testing repo for the demo
