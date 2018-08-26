@@ -6,19 +6,19 @@ openshift_cluster_content:
   - name: "demo-pipeline"
     template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
     params: "{{ inventory_dir }}/../templates/projectrequest/pipeline.params"
-    template_action: create
+    action: create
   - name: "demo-dev"
     template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
     params: "{{ inventory_dir }}/../templates/projectrequest/dev.params"
-    template_action: create
+    action: create
   - name: "demo-test"
     template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
     params: "{{ inventory_dir }}/../templates/projectrequest/test.params"
-    template_action: create
+    action: create
   - name: "demo-prod"
     template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
     params: "{{ inventory_dir }}/../templates/projectrequest/prod.params"
-    template_action: create
+    action: create
 - object: ci-cd
   content:
   - name: "jenkins-s2i"
