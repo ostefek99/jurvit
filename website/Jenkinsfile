@@ -1,12 +1,12 @@
 #!/usr/bin/groovy
 
-String SlackChannel = 'sdiego'
+// String SlackChannel = 'sdiego'
 String JenkinsServer = "${env.JENKINS_URL}/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 
 node (''){
     env.OCP_API_SERVER = "${env.OPENSHIFT_API_URL}"
     env.OCP_TOKEN = readFile('/var/run/secrets/kubernetes.io/serviceaccount/token').trim()
-    env.JENKINS_SERVER = "https://jenkins-demo-pipeline-sdiego.apps.d1.core.rht-labs.com/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
+//    env.JENKINS_SERVER = "https://jenkins-demo-pipeline-sdiego.apps.d1.core.rht-labs.com/job/${env.JOB_NAME}/${env.BUILD_ID}/console"
 }
 
 node('') {
@@ -15,7 +15,7 @@ node('') {
       checkout scm
     }
 
-    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
+//    slackSend channel: SlackChannel, color: "#439FE0", message: "@channel - Build started. ${env.JOB_NAME} ${env.BUILD_DISPLAY_NAME}"
 
     stage('Build Image') {
       sh "oc start-build ${env.APP_NAME} --from-dir=. -w"
@@ -45,7 +45,7 @@ node('') {
       echo 'All good here!'
     }
 
-    slackSend channel: SlackChannel, color: "#439FE0", message: "@jranoa - JOSH!! - the build needs your attention: ${env.JENKINS_SERVER}"
+//    slackSend channel: SlackChannel, color: "#439FE0", message: "@jranoa - JOSH!! - the build needs your attention: ${env.JENKINS_SERVER}"
 
     stage ('Deploy to Production') {
       input "Josh - Promote to Production?"
@@ -53,5 +53,5 @@ node('') {
       openshiftVerifyDeployment (apiURL: "${env.OCP_API_SERVER}", authToken: "${env.OCP_TOKEN}", depCfg: "${env.APP_NAME}", namespace: "${env.NAMESPACE_PROD}", verifyReplicaCount: true)
     }
 
-    slackSend channel: SlackChannel, color: "#00FF00", message: "@channel - SUCCESSFUL: New version is now in production!"
+//    slackSend channel: SlackChannel, color: "#00FF00", message: "@channel - SUCCESSFUL: New version is now in production!"
 }
