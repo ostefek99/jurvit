@@ -19,16 +19,6 @@ openshift_cluster_content:
     template: "https://raw.githubusercontent.com/redhat-cop/cluster-lifecycle/master/files/projectrequest/template.yml"
     params: "{{ inventory_dir }}/../templates/projectrequest/prod.params"
     action: create
-- object: ci-cd
-  content:
-  - name: "jenkins-s2i"
-    template: "https://raw.githubusercontent.com/rht-labs/labs-ci-cd/v3.10.0/openshift-templates/jenkins-s2i-build/template.yml"
-    params: "{{ inventory_dir }}/../templates/build/jenkins.params"
-    namespace: "demo-pipeline"
-  - name: "custom-jenkins"
-    template: "{{ inventory_dir }}/../templates/deploy/jenkins-template.yml"
-    params: "{{ inventory_dir }}/../templates/deploy/jenkins.params"
-    namespace: "demo-pipeline"
 - object: builds
   content:
   - name: "demo-pipeline"
